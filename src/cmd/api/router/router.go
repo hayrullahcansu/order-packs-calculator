@@ -3,6 +3,8 @@ package router
 import (
 	"fmt"
 	"net/http"
+	"path/filepath"
+	"runtime"
 
 	"github.com/gin-gonic/gin"
 )
@@ -15,7 +17,12 @@ func InitRouter(
 	// middleware recovers from any panic and returns 500 error code.
 	r.Use(gin.Recovery())
 
-	// initiate swagger UI
+	// serve static frontend
+	_, currentFile, _, _ := runtime.Caller(0)
+	staticDir := filepath.Join(filepath.Dir(currentFile), "..", "static")
+	r.StaticFile("/", staticDir+"/index.html")
+	r.Static("/static", staticDir)
+
 	v1 := r.Group("v1")
 	{
 		v1OrderPacks := v1.Group("order_packs")
