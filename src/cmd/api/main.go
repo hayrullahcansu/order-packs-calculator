@@ -1,3 +1,5 @@
+// Package main is the entry point for the Order Packs Calculator API server.
+// It initializes the database, wires up dependencies, and handles graceful shutdown.
 package main
 
 import (
@@ -19,18 +21,20 @@ func main() {
 	port := flag.Int("port", 8080, "Api port")
 	flag.Parse()
 
+	// listen for OS interrupt/kill signals for graceful shutdown
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, os.Kill)
 	defer cancel()
 
+	// initialize database with auto-migration and seed data
 	db := db.InitiateSqliteDbContext()
 
+	// wire up dependencies: repository -> service -> handler -> router
 	orderPackRepository := repository.NewOrderPackRepository(db)
 	orderPackService := service.NewOrderPackService(orderPackRepository)
-
-	// initiate handlers
 	messageHandler := router.NewOrderPackHandler(orderPackService)
 	srv := router.InitRouter(port, messageHandler)
 
+	// start HTTP server in a separate goroutine
 	go func() {
 		logging.Infof("Server starting on %s\n", srv.Addr)
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
@@ -39,10 +43,11 @@ func main() {
 		}
 	}()
 
+	// block until shutdown signal is received
 	<-ctx.Done()
-	// wait context cancellation and shut down resources gracefully
 	logging.Warning("Stop signal received. Server is going to shut down gracefully")
 
+	// allow up to 30 seconds for in-flight requests to complete
 	shutdownCtx, stop := context.WithTimeout(context.Background(), time.Second*30)
 	defer stop()
 
@@ -50,6 +55,7 @@ func main() {
 		logging.Errorf("error while stopping server %v\n", stopErr)
 	}
 
+	// close the underlying database connection pool
 	if sqlDB, err := db.DB(); err == nil {
 		if closeErr := sqlDB.Close(); closeErr != nil {
 			logging.Errorf("error while closing db connections %v\n", closeErr)

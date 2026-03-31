@@ -1,3 +1,4 @@
+// Package model defines the database entities and their validation rules.
 package model
 
 import "fmt"
@@ -8,6 +9,7 @@ type OrderPack struct {
 	Items int `gorm:"uniqueIndex" json:"items" example:"250"`
 }
 
+// Validate ensures the pack size is a positive integer.
 func (op *OrderPack) Validate() error {
 	if op == nil {
 		return fmt.Errorf("order pack cannot be nil")

@@ -40,12 +40,9 @@ func initateDbContext(connection string) *gorm.DB {
 	db.Model(&model.OrderPack{}).Count(&count)
 	if count == 0 {
 		seedPacks := []model.OrderPack{
-			{Items: 250},
-			{Items: 500},
-			{Items: 1000},
-			{Items: 2000},
-			{Items: 5000},
-			{Items: 10000},
+			{Items: 23},
+			{Items: 31},
+			{Items: 53},
 		}
 		db.Create(&seedPacks)
 		logging.Info("seed data has been inserted")

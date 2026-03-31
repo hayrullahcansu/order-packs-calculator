@@ -50,6 +50,18 @@ The application will be available at `http://localhost:8080`.
 go test ./...
 ```
 
+Run with verbose output:
+
+```bash
+go test -v ./...
+```
+
+Run with coverage report:
+
+```bash
+go test -cover ./...
+```
+
 ## API Endpoints
 
 Base URL: `/v1/order_packs`
@@ -125,7 +137,7 @@ src/
 
 On first run, the following pack sizes are created automatically:
 
-`250, 500, 1000, 2000, 5000, 10000`
+`23, 31, 53`
 
 ## Tech Stack
 

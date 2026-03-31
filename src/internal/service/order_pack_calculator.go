@@ -1,3 +1,4 @@
+// Package service contains the business logic for order pack management and calculation.
 package service
 
 import (
@@ -5,18 +6,19 @@ import (
 	"slices"
 )
 
+// OrderPackCalculator defines the interface for solving order pack optimization problems.
 type OrderPackCalculator interface {
-	// SolvePacks calculates minimize the number of packs/quantity
-	// packs represent available packs
-	// order is given order amount
-	// return type is map of packSize with count for each ordered packs
+	// SolvePacks finds the minimum number of packs that meet or exceed the given order quantity.
+	// It returns a map of pack size to count. Example: {500: 1, 250: 1} for order=501.
 	SolvePacks(packs []int, order int) map[int]int
 }
 
 type orderPackCalculator struct {
 }
 
-// SolvePacks implements OrderPackCalculator.
+// SolvePacks uses dynamic programming (coin change variant) to find the optimal pack combination.
+// Time complexity: O(N * UPPER_BOUND) where N is the number of pack sizes.
+// Space complexity: O(UPPER_BOUND) where UPPER_BOUND = order + max(pack).
 func (o *orderPackCalculator) SolvePacks(packs []int, order int) map[int]int {
 
 	MAX_INT := math.MaxInt
@@ -91,6 +93,7 @@ func (o *orderPackCalculator) SolvePacks(packs []int, order int) map[int]int {
 	return result
 }
 
+// NewOrderPackCalculator creates a new calculator instance.
 func NewOrderPackCalculator() OrderPackCalculator {
 	calculator := &orderPackCalculator{}
 

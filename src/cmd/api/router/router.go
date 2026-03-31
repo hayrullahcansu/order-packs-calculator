@@ -1,3 +1,4 @@
+// Package router configures HTTP routing, static file serving, and API endpoint registration.
 package router
 
 import (
@@ -10,6 +11,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// resolveStaticDir determines the static assets directory.
+// In production (Docker), it uses ./static next to the binary.
+// In development (go run), it falls back to the source tree path.
 func resolveStaticDir() string {
 	// prefer ./static next to the binary (Docker / production)
 	if _, err := os.Stat("static/index.html"); err == nil {
@@ -20,6 +24,7 @@ func resolveStaticDir() string {
 	return filepath.Join(filepath.Dir(currentFile), "..", "static")
 }
 
+// InitRouter creates and configures the HTTP server with all routes and middleware.
 func InitRouter(
 	port *int,
 	orderPackHandler *OrderPackHandler,

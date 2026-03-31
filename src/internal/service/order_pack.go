@@ -1,3 +1,4 @@
+// Package service contains the business logic for order pack management and calculation.
 package service
 
 import (
@@ -8,6 +9,7 @@ import (
 	"github.com/hayrullahcansu/order-packs-calculator/src/internal/model"
 )
 
+// OrderPackRepository defines the data access contract for order pack persistence.
 type OrderPackRepository interface {
 	FetchAvailableOrderPacks(ctx context.Context) ([]*model.OrderPack, error)
 	AddOrderPack(ctx context.Context, orderPack *model.OrderPack) error
@@ -16,11 +18,15 @@ type OrderPackRepository interface {
 	RemoveOrderPack(ctx context.Context, id uuid.UUID) error
 }
 
+// OrderPackService provides CRUD operations for pack sizes and delegates
+// order calculations to the OrderPackCalculator.
 type OrderPackService struct {
 	orderPackRepository OrderPackRepository
 	orderPackCalculator OrderPackCalculator
 }
 
+// NewOrderPackService creates a new service with the given repository
+// and an internally initialized calculator.
 func NewOrderPackService(
 	orderPackRepository OrderPackRepository,
 ) *OrderPackService {
@@ -31,6 +37,7 @@ func NewOrderPackService(
 	return manager
 }
 
+// GetAvailableOrderPacks returns all configured pack sizes from the database.
 func (s *OrderPackService) GetAvailableOrderPacks(ctx context.Context) ([]*model.OrderPack, error) {
 	select {
 	case <-ctx.Done():
@@ -40,6 +47,7 @@ func (s *OrderPackService) GetAvailableOrderPacks(ctx context.Context) ([]*model
 	return s.orderPackRepository.FetchAvailableOrderPacks(ctx)
 }
 
+// AddOrderPack validates and persists a new pack size. Returns an error if the size is duplicate.
 func (s *OrderPackService) AddOrderPack(ctx context.Context, items int) (*model.OrderPack, error) {
 	select {
 	case <-ctx.Done():
@@ -59,6 +67,7 @@ func (s *OrderPackService) AddOrderPack(ctx context.Context, items int) (*model.
 	return orderPack, nil
 }
 
+// UpdateOrderPack modifies an existing pack size identified by its UUID.
 func (s *OrderPackService) UpdateOrderPack(ctx context.Context, id uuid.UUID, items int) (*model.OrderPack, error) {
 	select {
 	case <-ctx.Done():
@@ -90,6 +99,7 @@ func (s *OrderPackService) UpdateOrderPack(ctx context.Context, id uuid.UUID, it
 	return orderPack, nil
 }
 
+// RemoveOrderPack deletes a pack size by its UUID.
 func (s *OrderPackService) RemoveOrderPack(ctx context.Context, id uuid.UUID) error {
 	select {
 	case <-ctx.Done():
@@ -103,8 +113,12 @@ func (s *OrderPackService) RemoveOrderPack(ctx context.Context, id uuid.UUID) er
 	return nil
 }
 
+// maxOrderLimit caps the order size to prevent excessive memory allocation
+// in the dynamic programming algorithm (~16 bytes per unit).
 const maxOrderLimit = 10_000_000
 
+// SolveOrderPacks calculates the optimal pack combination for a given order quantity.
+// It returns a map of pack size to count, minimizing both total items and number of packs.
 func (s *OrderPackService) SolveOrderPacks(ctx context.Context, order int) (map[int]int, error) {
 	select {
 	case <-ctx.Done():
