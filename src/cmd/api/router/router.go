@@ -3,11 +3,22 @@ package router
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"path/filepath"
 	"runtime"
 
 	"github.com/gin-gonic/gin"
 )
+
+func resolveStaticDir() string {
+	// prefer ./static next to the binary (Docker / production)
+	if _, err := os.Stat("static/index.html"); err == nil {
+		return "static"
+	}
+	// fallback: resolve relative to source file (go run / development)
+	_, currentFile, _, _ := runtime.Caller(0)
+	return filepath.Join(filepath.Dir(currentFile), "..", "static")
+}
 
 func InitRouter(
 	port *int,
@@ -18,8 +29,7 @@ func InitRouter(
 	r.Use(gin.Recovery())
 
 	// serve static frontend
-	_, currentFile, _, _ := runtime.Caller(0)
-	staticDir := filepath.Join(filepath.Dir(currentFile), "..", "static")
+	staticDir := resolveStaticDir()
 	r.StaticFile("/", staticDir+"/index.html")
 	r.Static("/static", staticDir)
 

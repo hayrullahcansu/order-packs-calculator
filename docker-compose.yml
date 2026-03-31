@@ -1,0 +1,14 @@
+services:
+  order-packs-calculator:
+    build: .
+    image: order-packs-calculator:latest
+    container_name: order-packs-calculator
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+    volumes:
+      - db-data:/app/data
+    command: ["-port=8080"]
+
+volumes:
+  db-data:
