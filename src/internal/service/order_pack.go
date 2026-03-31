@@ -103,11 +103,20 @@ func (s *OrderPackService) RemoveOrderPack(ctx context.Context, id uuid.UUID) er
 	return nil
 }
 
+const maxOrderLimit = 10_000_000
+
 func (s *OrderPackService) SolveOrderPacks(ctx context.Context, order int) (map[int]int, error) {
 	select {
 	case <-ctx.Done():
 		return nil, ctx.Err()
 	default:
+	}
+
+	if order <= 0 {
+		return nil, fmt.Errorf("order must be greater than 0")
+	}
+	if order > maxOrderLimit {
+		return nil, fmt.Errorf("order must not exceed %d", maxOrderLimit)
 	}
 
 	orderPacks, fetchErr := s.orderPackRepository.FetchAvailableOrderPacks(ctx)
