@@ -34,5 +34,22 @@ func initateDbContext(connection string) *gorm.DB {
 		logging.Fatalf("migration error %v", migrateErr)
 	}
 	logging.Info("migration has completed")
+
+	// seed default order packs on first run
+	var count int64
+	db.Model(&model.OrderPack{}).Count(&count)
+	if count == 0 {
+		seedPacks := []model.OrderPack{
+			{Items: 250},
+			{Items: 500},
+			{Items: 1000},
+			{Items: 2000},
+			{Items: 5000},
+			{Items: 10000},
+		}
+		db.Create(&seedPacks)
+		logging.Info("seed data has been inserted")
+	}
+
 	return db
 }
