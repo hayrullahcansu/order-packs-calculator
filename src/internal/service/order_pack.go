@@ -18,6 +18,13 @@ type OrderPackRepository interface {
 	RemoveOrderPack(ctx context.Context, id uuid.UUID) error
 }
 
+// OrderPackCalculator defines the interface for solving order pack optimization problems.
+type OrderPackCalculator interface {
+	// SolvePacks finds the minimum number of packs that meet or exceed the given order quantity.
+	// It returns a map of pack size to count. Example: {500: 1, 250: 1} for order=501.
+	SolvePacks(packs []int, order int) map[int]int
+}
+
 // OrderPackService provides CRUD operations for pack sizes and delegates
 // order calculations to the OrderPackCalculator.
 type OrderPackService struct {
